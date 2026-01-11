@@ -1,0 +1,19 @@
+1. Building the image :
+	docker build -t nodejs-hello-world:1.0.0 .
+Verify whether the image is created 
+	docker images
+
+2. Exposing the image in container with port 80 
+	docker run -d --name nodejs-hello -p 80:3000 nodejs-hello-world:1.0.0...
+	#app port: cont port , so host is available on port 80
+Verify it :
+	docker ps
+	
+3. Check whether connection is established via docker hub and also in cli 
+	curl http://localhost
+	
+4. Reterieve the logs 
+	docker logs nodejs-hello
+	
+5. Save the container image to the file 
+	docker save nodejs-hello-world:1.0.0 -o nodejs-hello-world-1.0.0.tar
