@@ -1,0 +1,64 @@
+1. Created a namespace with ckad-prep
+
+YAML :
+
+apiVersion: v1
+kind: Namespace
+metadata:
+	name: ckad-prep
+	labels:
+		environment: ckad
+		
+Verify : kubectl get ns
+			
+2. Created a pod under the ckad-prep namespace 
+
+YAML:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod 
+  namespace: ckad-prep
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.15.12
+    ports:
+    - containerPort: 80
+	
+Verify : kubectl get pods --namespace=ckad-prep
+
+3. Pod is not running due to image pull pack as the version is not correct 
+
+So, modified the YAML and applied 
+
+mypod   Running
+
+4. Verify container status:
+
+kubectl describe pod mypod -n ckad-prep
+
+5. Log into the Container and Run ls
+
+kubectl exec -it mypod -n ckad-prep -- /bin/bash
+ls
+
+6. Retrieve the IP Address of Pod mypod
+
+kubectl get pod mypod -n ckad-prep -o wide
+
+7. Run a Temporary BusyBox Pod and Test Connectivity
+
+kubectl run busybox --rm -it \
+--image=busybox \
+--namespace=ckad-prep \
+-- /bin/sh
+
+8. Render Logs of Pod mypod
+
+kubectl logs mypod -n ckad-prep
+
+9. Delete the Pod and Namespace
+
+kubectl delete pod mypod -n ckad-prep
