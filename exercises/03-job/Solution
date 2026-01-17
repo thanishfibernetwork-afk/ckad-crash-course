@@ -1,0 +1,72 @@
+ Step 1: Create the Job
+
+Create a YAML file named **random-hash-job.yaml**.
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: random-hash
+spec:
+  parallelism: 2
+  completions: 5
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: random-hash
+        image: alpine:3.17.3
+        command:
+        - /bin/sh
+        - -c
+        - echo $RANDOM | base64 | head -c 20
+
+Step 2: Create the Job
+
+Apply the Job configuration:
+
+bash
+kubectl apply -f random-hash-job.yaml
+
+ Step 3: Identify the Pods created by the Job
+
+List the Pods:
+
+kubectl get pods
+
+
+Pods with names starting with **random-hash-** are created by this Job. These Pods executed the shell command.
+
+Step 4: How many Pods are expected?
+
+* **completions: 5** → Total successful Pods required
+* **parallelism: 2** → Maximum 2 Pods run at the same time
+
+**Total Pods expected: 5**
+
+Step 5: Retrieve the generated hash from a Pod
+
+Check the logs of any completed Pod:
+
+kubectl logs <pod-name>
+
+
+The output is the generated random hash.
+
+## Step 6: Delete the Job
+
+kubectl delete job random-hash
+
+
+
+ Step 7: Do the Pods continue to exist?
+
+
+When the Job is deleted, Kubernetes automatically deletes all Pods created by the Job.
+
+Verify:
+
+kubectl get pods
+
+
+The Job Pods will no longer be present.
