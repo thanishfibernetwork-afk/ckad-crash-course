@@ -1,0 +1,54 @@
+  1. Create a CronJob named current-date that runs every minute and executes the shell command echo "Current date: $(date)". Use the container image nginx:1.21.6.
+
+YAML wrote to create a cj :
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: current-date
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: current-date
+            image: nginx:1.21.6
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - date
+            - echo " "current-date :" "$date";
+          restartPolicy: OnFailure
+		  
+2. Watch the jobs as they are being scheduled.
+
+Command : kubectl get cronjobs --watch
+
+3. Identify one of the Pods that ran the CronJob and render the logs.
+
+Command : Kubectl logs current-date-29480366
+
+C:\Users\thani\Kubernetes>kubectl logs current-date-29480376-mkw9p
+Mon Jan 19 11:36:00 UTC 2026
+
+C:\Users\thani\Kubernetes>
+
+4. Determine the number of successful executions the CronJob will keep in its history.
+
+I can see it shows the recent successful of 3 cj'schedule
+
+C:\Users\thani\Kubernetes>kubectl get jobs
+NAME                    STATUS     COMPLETIONS   DURATION   AGE
+current-date-29480380   Complete   1/1           3s         2m39s
+current-date-29480381   Complete   1/1           4s         99s
+current-date-29480382   Complete   1/1           3s         39s
+
+5. Delete the CronJob.
+
+C:\Users\thani\Kubernetes>kubectl delete cronjob current-date
+cronjob.batch "current-date" deleted from default namespace
+
+C:\Users\thani\Kubernetes>
