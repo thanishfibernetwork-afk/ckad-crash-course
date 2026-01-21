@@ -1,0 +1,59 @@
+Step 1: Create a namespace of h92 
+
+Step 2: Create a pod and define the volume/volume mount :
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  namespace: h92
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.21.6
+    volumeMounts:
+    - name: nginx-run
+      mountPath: /var/run
+    - name: nginx-cache
+      mountPath: /var/cache/nginx
+    - name: nginx-data
+      mountPath: /usr/local/nginx
+  volumes:
+  - name: nginx-run
+    emptyDir: {}
+  - name: nginx-cache
+    emptyDir: {}
+  - name: nginx-data
+    emptyDir: {}
+	
+Verification :	
+
+C:\Users\thani\Kubernetes>kubectl get pods -n h92
+NAME    READY   STATUS    RESTARTS   AGE
+nginx   1/1     Running   0          2m13s
+
+By using describe command we can see the volumes :
+
+Volumes:
+  nginx-run:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+    SizeLimit:  <unset>
+  nginx-cache:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+    SizeLimit:  <unset>
+  nginx-data:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+    SizeLimit:  <unset>
+
+Step 3: 
+
+To ensure the nginx can only write to those Volume mount paths but not the container's temporary file we have to set the below condition in the yaml
+
+Use readOnlyRootFilesystem: true in the container’s securityContext.
+securityContext:
+      readOnlyRootFilesystem: true
+
+
