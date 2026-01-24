@@ -1,0 +1,61 @@
+Step 1 :
+
+Create a pod using yaml with 2 containers as per requirment , and also add the Empty dir volume / volume mounts for the containers 
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: adapter
+spec:
+  volumes:
+    - name: logs
+      emptyDir: {}
+  containers:
+    - name: app
+      image: busybox:1.36.1
+      volumeMounts:
+        - name: logs
+          mountPath: /var/logs
+      command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            echo "$(date) | $(du -sh ~)" >> /var/logs/diskspace.txt
+            sleep 5
+          done
+
+    - name: transformer
+      image: busybox:1.36.1
+      volumeMounts:
+        - name: logs
+          mountPath: /var/logs
+      command:
+        - /bin/sh
+        - -c
+        - |
+          sleep 20
+          while true; do
+            while read LINE; do
+              echo "$LINE" | cut -f2 -d"|" >> $(date +%Y-%m-%d-%H-%M-%S)-transformed.txt
+            done < /var/logs/diskspace.txt
+            sleep 20
+          done
+
+
+app writes disk usage logs every 5 seconds into /var/logs/diskspace.txt
+
+transformer reads that file every 20 seconds, strips the timestamp, and writes output files like:
+
+C:\Users\thani\Kubernetes>kubectl exec -it adapter
+error: you must specify at least one command for the container
+
+C:\Users\thani\Kubernetes>kubectl exec -it adapter -c transformer
+error: you must specify at least one command for the container
+
+C:\Users\thani\Kubernetes>kubectl exec -it adapter -c transformer -- sh
+/ #
+/ # ls
+2026-01-24-17-45-23-transformed.txt  2026-01-24-17-46-43-transformed.txt  home                                 root                                 var
+2026-01-24-17-45-43-transformed.txt  bin                                  lib                                  sys
+2026-01-24-17-46-03-transformed.txt  dev                                  lib64                                tmp
