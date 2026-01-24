@@ -1,0 +1,83 @@
+Step 1: Create PersistentVolume (PV)
+
+pv.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+spec:
+  capacity:
+    storage: 512Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  hostPath:
+    path: /data/config
+
+
+kubectl apply -f pv.yaml
+
+Verify : kubectl get pv 
+
+Step 2: Create PersistentVolumeClaim (PVC)
+
+pvc.yaml :
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 256Mi
+  storageClassName: ""
+
+
+Verification : kubectl get pvc
+
+Step 3: Create Pod and Mount the PVC
+
+pod.yaml :
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.21.6
+      volumeMounts:
+        - name: app-config
+          mountPath: /var/app/config
+  volumes:
+    - name: app-config
+      persistentVolumeClaim:
+        claimName: pvc
+
+Step 4 : After creating the pv , pvc , pod . I am creating a text file in the mounted directory inside the container using exec command .
+After which i am deleting the pod and recreating the same pod using the same yaml file and checking whether the same file exists . And it is ..
+
+C:\Users\thani\Kubernetes>kubectl exec -it app -- /bin/sh
+# cd /var/app/config
+# echo "hi" > test.txt
+# ls -l
+total 4
+-rw-r--r-- 1 root root 3 Jan 24 15:23 test.txt
+# cat test.txt
+hi
+
+C:\Users\thani\Kubernetes>kubectl delete pod app
+pod "app" deleted from default namespace
+
+C:\Users\thani\Kubernetes>kubectl apply -f pod.yaml
+pod/app created
+
+C:\Users\thani\Kubernetes>kubectl exec -it app -- cat /var/app/config/test.txt
+hi
+
