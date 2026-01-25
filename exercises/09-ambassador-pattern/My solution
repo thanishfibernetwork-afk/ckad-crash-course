@@ -1,0 +1,44 @@
+Step 1 :
+
+Creating a pod in the ext-access namespace and define 2 containers namely :
+	1. business-app should use the image bmuschko/nodejs-business-app:1.0.0 and expose the container port 8080.
+	2.  The ambassador container uses the image bmuschko/nodejs-ambassador:1.0.0 and exposes the container port 8081.
+	
+YAML :
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rate-limiter
+  namespace: ext-access
+spec:
+  containers:
+  - name: business-app
+    image: bmuschko/nodejs-business-app:1.0.0
+    ports:
+    - containerPort: 8080
+
+  - name: ambassador
+    image: bmuschko/nodejs-ambassador:1.0.0
+    ports:
+    - containerPort: 8081
+
+step 2 :
+
+Check the http reuest that it can accept going inside the container :
+
+C:\Users\thani\Kubernetes>kubectl exec -it rate-limiter -n ext-access -c business-app -- sh
+#
+{"args":{"test":"undefined"},"headers":{"host":"postman-echo.com","accept-encoding":"gzip, br","x-forwarded-proto":"https"},"url":"https://postman-echo.com/get?test=undefined"}#
+# curl localhost:8081/test
+{"args":{"test":"undefined"},"headers":{"host":"postman-echo.com","accept-encoding":"gzip, br","x-forwarded-proto":"https"},"url":"https://postman-echo.com/get?test=undefined"}#
+# curl localhost:8081/test
+{"args":{"test":"undefined"},"headers":{"host":"postman-echo.com","accept-encoding":"gzip, br","x-forwarded-proto":"https"},"url":"https://postman-echo.com/get?test=undefined"}#
+# curl localhost:8081/test
+{"args":{"test":"undefined"},"headers":{"host":"postman-echo.com","accept-encoding":"gzip, br","x-forwarded-proto":"https"},"url":"https://postman-echo.com/get?test=undefined"}#
+# curl localhost:8081/test
+{"args":{"test":"undefined"},"headers":{"host":"postman-echo.com","accept-encoding":"gzip, br","x-forwarded-proto":"https"},"url":"https://postman-echo.com/get?test=undefined"}#
+# curl localhost:8081/test
+Too many requests made created from this IP, please try again after an hour#
+
+On the sixth call, we received an error message, as the rate limit has been reached within the given time frame.
