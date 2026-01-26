@@ -1,0 +1,95 @@
+Step 1 :
+
+Create 3 pods named frontend,backend,database and use image nginx .
+Adding the below labels and annotations to the concerned pods 
+
+Lables :
+
+frontend: env=prod, team=shiny
+backend: env=prod, team=legacy, app=v1.2.4
+database: env=prod, team=storage
+
+Annotaions :
+
+frontend: contact=John Doe, commit=2d3mg3
+backend: contact=Mary Harris
+
+YAML :
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend
+  labels:
+    env: prod
+    team: shiny
+  annotations:
+    contact: "John Doe"
+    commit: "2d3mg3"
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.25.5-alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backend
+  labels:
+    env: prod
+    team: legacy
+    app: v1.2.4
+  annotations:
+    contact: "Mary Harris"
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.25.5-alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: database
+  labels:
+    env: prod
+    team: storage
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.25.5-alpine
+
+Step 2 :
+
+Render the list of all Pods and their labels.
+
+C:\Users\thani\Kubernetes>kubectl get pods --show-labels
+NAME       READY   STATUS    RESTARTS   AGE     LABELS
+backend    1/1     Running   0          3m19s   app=v1.2.4,env=prod,team=legacy
+database   1/1     Running   0          3m19s   env=prod,team=storage
+frontend   1/1     Running   0          3m19s   env=prod,team=shiny
+
+
+Step 3 :
+
+Query production Pods for teams shiny and legacy
+
+C:\Users\thani\Kubernetes>kubectl get pods -l "env=prod,team in (shiny,legacy)"
+NAME       READY   STATUS    RESTARTS   AGE
+backend    1/1     Running   0          5m32s
+frontend   1/1     Running   0          5m32s
+
+Step 4 :
+
+Remove the env label from the backend Pod
+
+C:\Users\thani\Kubernetes>kubectl label pod backend env-
+pod/backend unlabeled
+
+C:\Users\thani\Kubernetes>kubectl get pod backend --show-labels
+NAME      READY   STATUS    RESTARTS   AGE     LABELS
+backend   1/1     Running   0          6m52s   app=v1.2.4,team=legacy
+
+Step 5 : Render the surrounding 3 lines of YAML of all Pods that have annotations.
+
+ kubectl get pods -o yaml |
+>> Select-String "contact:|commit:" -Context 3,3
