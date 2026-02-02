@@ -1,3 +1,6 @@
+
+
+
 Step 1 – Create the blue deployment
 
 YAML :
