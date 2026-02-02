@@ -39,9 +39,11 @@ spec:
   ports:
   - port: 80
     targetPort: 80
+```
 
 Step 3 – Test access to the Service using a temporary curl Pod
 
+```
 apiVersion: v1
 kind: Pod
 metadata:
